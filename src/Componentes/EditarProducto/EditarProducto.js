@@ -1,7 +1,31 @@
-function Formulario(props){
+import React,{ useEffect, useState } from "react";
+import axios from "axios";
+import Formulario from "../Formulario/Formulario";
+
+const EditarProducto = (props) => {
+    const id = props.match.params.id;
+    const [producto, setProducto] = useState({})
+    
+    
+    const editarProducto = (e) =>{
+        const datosaActualizar = {
+          title: e.target.title.value,
+          price:e.target.price.value,
+          description:e.target.description.value
+        }
+    
+        axios.put("http://localhost:8080/api/producto/edit/"+id,datosaActualizar)
+          .then(response => {
+            let productosActualizados = [...producto];
+            const indice = productosActualizados.findIndex((nuevoProducto) => nuevoProducto._id === id);
+            productosActualizados[indice] = response.data;
+            setProducto(productosActualizados);
+          })
+      }
+
     return(
         <div>
-            <form onSubmit={props.agregarNuevoProducto}>
+            <form onSubmit={editarProducto}>
                 <h3>
                     Product Manager
                 </h3>
@@ -10,7 +34,7 @@ function Formulario(props){
                         Title:
                     </label>
                     <input type="text" id="title"
-                            value={props.nuevoProducto.title}
+                            value={producto.title}
                             onChange={(e) => props.actualizarCampoNuevoProducto('title', e.target.value)}/>
                 </div>
                 <div>
@@ -36,5 +60,4 @@ function Formulario(props){
         </div>
     )
 }
-
-export default Formulario;
+export default EditarProducto;
