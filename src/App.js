@@ -1,8 +1,10 @@
-import {useState} from 'react';
+import React,{useEffect, useState} from 'react';
 import axios from 'axios';
 import './App.css';
 import {BrowserRouter,Route, Switch} from 'react-router-dom';
 import Formulario from './Componentes/Formulario/Formulario';
+import ListaProductos from './Componentes/ListaProductos/ListaProductos';
+import DetalleProducto from './Componentes/DetalleProducto/DetalleProducto';
 
 function App() {
   const productoNuevoInicial = {
@@ -14,7 +16,7 @@ function App() {
   const[productos, setProductos] = useState( []);
   const [nuevoProducto, setNuevoProducto] = useState( productoNuevoInicial );
   
-
+ 
 
   const agregarNuevoProducto =(event) =>{
     event.preventDefault();
@@ -26,7 +28,7 @@ function App() {
         setProductos( (productosPrev) => [...productosPrev, response.data]);
       });
     setNuevoProducto( (productoNuevoPrev) => productoNuevoInicial);
-    console.log(nuevoProducto, "AQUI ESTOY")
+    console.log(nuevoProducto, "soy NUEVOPRODUCTO")
   }
 
   const actualizarCampoNuevoProducto = (propiedad,valor) =>{
@@ -36,14 +38,37 @@ function App() {
     });
   }
 
+  useEffect( () => {  
+    axios.get( 'http://localhost:8080/api/producto/getAll')
+      .then( response => {
+        const listaProductos = response.data.map( (producto, index) => {
+          return {
+            _id : producto._id,
+            title : producto.title,
+            price : producto.price,
+            description : producto.description
+          }
+        });
+        setProductos( (productosPrev) => listaProductos);
+      });
+  }, []);
+
   return (
     <div className="App">
       <BrowserRouter>
         <Switch>
-          <Route path="/" render={(routeProps) =>  <Formulario agregarNuevoProducto={agregarNuevoProducto}
-                                                                nuevoProducto={nuevoProducto}
-                                                                actualizarCampoNuevoProducto={actualizarCampoNuevoProducto}
-                                                                {...routeProps}/>}/>
+          <Route exact path="/:id" render={(routeProps) => <DetalleProducto {...routeProps}/>}/>  
+                                                                            
+          <Route exact path="/" render={(routeProps) =>  
+            <div>
+              <Formulario agregarNuevoProducto={agregarNuevoProducto}
+                          nuevoProducto={nuevoProducto}
+                          actualizarCampoNuevoProducto={actualizarCampoNuevoProducto}
+                          {...routeProps}/> 
+              <ListaProductos productos={productos}/>
+            </div>
+          }/>     
+              
         </Switch>
         
       </BrowserRouter>
